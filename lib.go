@@ -33,6 +33,15 @@ func (de *DataAndError[K, D, E]) Store(key K, data D) {
 	de.rw.Unlock()
 }
 
+func (de *DataAndError[K, D, E]) StoreError(key K, error E) {
+	de.rw.Lock()
+	defer de.rw.Unlock()
+	if _, exist := de.data[key]; exist {
+		return
+	}
+	de.error[key] = error
+}
+
 func (de *DataAndError[K, D, E]) Load(key K) (D, bool) {
 	de.rw.RLock()
 	defer de.rw.RUnlock()
