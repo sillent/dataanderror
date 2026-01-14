@@ -7,6 +7,13 @@ import (
 	"sync"
 )
 
+type from int
+
+const (
+	data from = iota
+	err
+)
+
 type Keyable interface {
 	comparable
 	~string
@@ -49,6 +56,13 @@ func (de *DataAndError[K, D, E]) Load(key K) (D, bool) {
 	return value, exist
 }
 
+func (de *DataAndError[K, D, E]) LoadError(key K) (E, bool) {
+	de.rw.RLock()
+	defer de.rw.RUnlock()
+	value, exist := de.error[key]
+	return value, exist
+}
+
 func (de *DataAndError[K, D, E]) CopiedData() map[K]D {
 	de.rw.RLock()
 	defer de.rw.RUnlock()
@@ -75,4 +89,23 @@ func (de *DataAndError[K, D, E]) DataString() string {
 	}
 	return totalStr
 
+}
+
+func (de *DataAndError[K, D, E]) Remove(key K) {
+	de.remove(key, data)
+}
+
+func (de *DataAndError[K, D, E]) RemoveError(key K) {
+	de.remove(key, err)
+}
+
+func (de *DataAndError[K, D, E]) remove(key K, f from) {
+	de.rw.Lock()
+	defer de.rw.Unlock()
+	switch f {
+	case data:
+		delete(de.data, key)
+	case err:
+		delete(de.error, key)
+	}
 }
