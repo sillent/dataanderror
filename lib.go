@@ -88,7 +88,17 @@ func (de *DataAndError[K, D, E]) DataString() string {
 		totalStr = strings.Join([]string{totalStr, kv}, "|")
 	}
 	return totalStr
+}
 
+func (de *DataAndError[K, D, E]) ErrorString() string {
+	de.rw.RLock()
+	defer de.rw.RUnlock()
+	totalStr := ""
+	for k, v := range de.error {
+		kv := strings.Join([]string{string(k), fmt.Sprintf("%v", v)}, ":")
+		totalStr = strings.Join([]string{totalStr, kv}, "|")
+	}
+	return totalStr
 }
 
 func (de *DataAndError[K, D, E]) Remove(key K) {
